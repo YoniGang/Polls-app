@@ -14,23 +14,23 @@ def questions_list(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-def get_question(request, pk):
-    qustion = get_object_or_404(Question, id = pk)
+def get_question(request, qid):
+    qustion = get_object_or_404(Question, id = qid)
     serializer = QuestionSerializer(qustion, many=False)
 
     return Response(serializer.data)
 
 @api_view(['GET'])
-def get_choices(request, pk):
-    qustion = get_object_or_404(Question, id = pk)
+def get_choices(request, qid):
+    qustion = get_object_or_404(Question, id = qid)
     choices = qustion.choice_set.all()
     serializer = ChoiceSerializer(choices, many=True)
 
     return Response(serializer.data)
 
 @api_view(['GET'])
-def get_votes(request, pk):
-    qustion = get_object_or_404(Question, id = pk)
+def get_votes(request, qid):
+    qustion = get_object_or_404(Question, id = qid)
     choices = qustion.choice_set.all()
     serializer = []
     for choice in choices:
@@ -65,6 +65,27 @@ def create_poll(request):
         qustion.choice_set.create(choice_text=choice_text)
 
     return Response(new_question, status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+def vote(request, qid):
+    question = get_object_or_404(Question, id = qid)
+    user_agent = request.META['HTTP_USER_AGENT']
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR'))
+    try:
+        selected_choice = question.choice_set.get(pk=request.data['choice'])
+    except:
+        return Response({"Bad Request": "choice not exist"}, status.HTTP_400_BAD_REQUEST)
+    
+    new_vote = selected_choice.vote_set.create(user_agent = user_agent, ip_address = ip)
+    new_vote = VoteSerializer(new_vote, many = False)
+    selected_choice.votes += 1
+    selected_choice.save()
+
+    return Response(new_vote.data, status.HTTP_202_ACCEPTED)
+
+
+
+
 
 
 
