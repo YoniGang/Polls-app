@@ -1,1 +1,4 @@
 polls_app/__pycache__/**/*
+polls_app/polls_app/__pycache__/**/*
+polls_app/api/__pycache__/**/*
+polls_app/api/migrations/__pycache__/**/*
