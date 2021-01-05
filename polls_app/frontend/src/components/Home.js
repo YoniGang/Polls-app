@@ -25,8 +25,8 @@ export default class Polls extends Component {
         this.props.history.push('/poll/' + pollId);
       }
 
-      test () {
-        this.props.history.push("/test")
+      handleClickCreate () {
+        this.props.history.push("/create")
       }
 
       getId () {
@@ -41,7 +41,12 @@ export default class Polls extends Component {
                         <h1>Polls App</h1>
                     </Col>
                     <Col> 
-                        <Button variant="primary" style={{margin:10}}>Create new poll</Button>
+                        <Button 
+                            onClick={() => this.handleClickCreate()}
+                            variant="primary" 
+                             style={{margin:10}}>
+                                Create new poll
+                        </Button>
                     </Col>
                 </Row>
                 <Row>
@@ -52,7 +57,11 @@ export default class Polls extends Component {
                             <Card key={idx}>
                                 <Card.Body>
                                     <Card.Title>{poll.question_text}</Card.Title>
-                                    <Button onClick={() => this.handleClick(poll.id)} variant="primary">See Poll</Button>
+                                    <Button 
+                                        onClick={() => this.handleClick(poll.id)} 
+                                        variant="primary">
+                                            See Poll
+                                    </Button>
                                 </Card.Body>
                             </Card>
                         ))}     
