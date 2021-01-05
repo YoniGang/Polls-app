@@ -8,29 +8,32 @@ export default class Polls extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            polls:[ {
-                "id": 3,
-                "question_text": "How do you do?",
-                "pub_date": "2021-01-04T13:26:00Z"
-            },
-            {
-                "id": 11,
-                "question_text": "are you good?",
-                "pub_date": "2021-01-04T15:39:09.362215Z"
-            }
-        ]
+            polls:[]
         }
       }
+
+      componentDidMount() {
+        this.fetchPolls()
+      }
+
+      fetchPolls() {
+        console.log('Fetching...')
+
+        fetch('http://127.0.0.1:8000/api/questions')
+        .then(response => response.json())
+        .then(data => 
+            this.setState({
+                polls:data
+            })
+        )
+      }
+
       handleClick(pollId) {
         this.props.history.push('/poll/' + pollId);
       }
 
       handleClickCreate () {
         this.props.history.push("/create")
-      }
-
-      getId () {
-        return this.props.match.params.id
       }
 
       render() {

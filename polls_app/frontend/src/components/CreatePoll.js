@@ -14,13 +14,13 @@ export default class Poll extends Component {
         this.props.history.push('/');
       }
 
-      handleChoiceChange (e, idx) { 
+      handleChoiceChange(e, idx) { 
         let choices = [...this.state.choicesValArr]
         choices[idx] = e.target.value
         this.setState({choicesValArr: choices})
       }
 
-      handleAddChoice (push) {
+      handleAddChoice(push) {
         let choices = [...this.state.choicesValArr]
         if (push)
             choices.push("")
@@ -28,6 +28,10 @@ export default class Poll extends Component {
             choices.pop()
         this.setState({choicesValArr: choices})
       }
+
+      handleSubmit() {
+          console.log(this.state.choicesValArr)
+        }
 
       
       render() {
@@ -47,7 +51,7 @@ export default class Poll extends Component {
                         <Card>
                             <Card.Header as="h5">Create poll</Card.Header>
                             <Card.Body>
-                                <Form onSubmit={() => console.log(this.state.choicesValArr)}>
+                                <Form onSubmit={() => this.handleSubmit()}>
                                     <Form.Group>
                                         <Form.Control 
                                             placeholder="Question"
