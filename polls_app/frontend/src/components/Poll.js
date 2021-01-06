@@ -1,5 +1,16 @@
 import React, { Component } from 'react';
-import { Button, Card, Container, Row, Col, ButtonGroup, ToggleButton, Badge, Alert} from 'react-bootstrap';
+import { 
+    Button, 
+    Card, 
+    Container, 
+    Row, 
+    Col, 
+    ButtonGroup,
+     ToggleButton, 
+     Badge, 
+     Alert, 
+     ProgressBar, 
+     ListGroup} from 'react-bootstrap';
 
 export default class Poll extends Component {
     constructor(props) {
@@ -22,8 +33,6 @@ export default class Poll extends Component {
 
     componentDidMount() {
         this.fetchQuestion();
-        this.fetchChoices();
-        this.internalIpVoteCheck();
       }
 
       internalIpVoteCheck(){
@@ -47,12 +56,17 @@ export default class Poll extends Component {
         const id = this.props.match.params.id
         fetch('http://127.0.0.1:8000/api/question/' + id)
         .then(response => response.json())
-        .then(data => 
-            // console.log(data)
-            this.setState({
-                qustionText: data.question_text
-            })
-        )
+        .then(data => {
+            if (data.detail)
+                this.props.history.push('/');
+            else {
+                this.setState({
+                    qustionText: data.question_text
+                })
+                this.fetchChoices();
+                this.internalIpVoteCheck();
+            }
+        })
       }
 
       fetchChoices() {
@@ -75,6 +89,12 @@ export default class Poll extends Component {
 
       getId() {
         return this.props.match.params.id
+      }
+
+      sumVotes() {
+          let sum = 0
+          this.state.choices.forEach((c) => sum += c.votes)
+          return sum
       }
 
       handleVote() {
@@ -115,7 +135,7 @@ export default class Poll extends Component {
             return
       }
 
-      showButtonsOrResults() {
+      showButtons() {
         return (
             <div>
                 <ButtonGroup toggle vertical>
@@ -141,6 +161,37 @@ export default class Poll extends Component {
           )
       }
 
+      showResults() {
+        return (
+            <div>
+                <ListGroup variant="flush">
+                    {this.state.choices.map((choice, idx) => (
+                        <ListGroup.Item
+                            key={idx}
+                        >
+                            {choice.choice_text}
+                            {<ProgressBar 
+                                variant="danger" 
+                                now={(choice.votes/this.sumVotes())*100} 
+                                label={choice.votes}
+                             />}
+                        </ListGroup.Item>
+                    ))}
+                </ListGroup>
+        </div>
+          )
+      }
+
+      showButtonsOrResults() {
+        if (this.state.showResults) {
+            return this.showResults()
+        }
+
+        return this.showButtons()
+
+        
+      }
+
       render() {
           return (
             <Container>
@@ -162,7 +213,7 @@ export default class Poll extends Component {
                     <Col>
                         <Card>
                             <Card.Header as="h5">Poll question</Card.Header>
-                            <Card.Body>
+                            <Card.Body className="text-center">
                                 <Alert 
                                         show={this.state.showError} 
                                         onClose={() => this.setState({showError: false})} 

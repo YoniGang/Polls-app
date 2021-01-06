@@ -92,10 +92,20 @@ def vote(request, qid):
 
     return Response(new_vote.data, status.HTTP_202_ACCEPTED)
 
+
 @api_view(['GET'])
 def get_internal_ip(request):
     ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR'))
     return Response({"ip": ip}, status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+def delete_poll(request, qid):
+    question = get_object_or_404(Question, id = qid)
+    question.delete()
+
+    return Response({"Success": "Delete success"}, status.HTTP_200_OK)
+
 
 
 

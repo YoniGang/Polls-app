@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = 'xv+js4jhb*mcvx!epvwp!yk49qgs2pq+75&&h%&mx!r%ggzj5b'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.109', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.1.109', '127.0.0.1', 'localhost']
 # ALLOWED_HOSTS = []
 
 
@@ -59,7 +60,9 @@ ROOT_URLCONF = 'polls_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'frontend/build')
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -123,6 +126,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(os.path.join(BASE_DIR, 'frontend'), 'build', 'static')
+]
 
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000"

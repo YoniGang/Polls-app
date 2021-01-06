@@ -37,6 +37,17 @@ export default class Polls extends Component {
         this.props.history.push("/create")
       }
 
+      handelClickDelete(pollId) {
+        console.log('Deleting...')
+
+        fetch('http://127.0.0.1:8000/api/delete_poll/' + pollId, {method: "DELETE"})
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data);
+            this.fetchPolls()
+        })
+      }
+
       render() {
           return (
             <Container>
@@ -58,13 +69,19 @@ export default class Polls extends Component {
                     <Col>
                         {/* <Card.Header as="h5">Featured</Card.Header> */}
                         {this.state.polls.map((poll, idx) => (
-                            <Card key={idx}>
+                            <Card key={idx} className="text-center" style={{marginTop:10}}>
                                 <Card.Body>
                                     <Card.Title>{poll.question_text}</Card.Title>
                                     <Button 
                                         onClick={() => this.handleClick(poll.id)} 
                                         variant="primary">
                                             See Poll
+                                    </Button>
+                                    <Button 
+                                        onClick={() => this.handelClickDelete(poll.id)} 
+                                        variant="danger"
+                                        style={{marginLeft:10}}>
+                                            Delete
                                     </Button>
                                 </Card.Body>
                             </Card>
