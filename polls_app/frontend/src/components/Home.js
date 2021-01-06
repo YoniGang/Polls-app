@@ -4,6 +4,7 @@ import { Button, Card, Container, Row, Col} from 'react-bootstrap';
 // import Card from 'react-bootstrap/Card';
 // import Container from 'react-bootstrap/Container';
 
+
 export default class Polls extends Component {
     constructor(props) {
         super(props);
@@ -39,15 +40,15 @@ export default class Polls extends Component {
       render() {
           return (
             <Container>
-                <Row>
+                <Row style={{margin:10}}>
                     <Col className="App">
-                        <h1>Polls App</h1>
+                        <h2>Polls App</h2>
                     </Col>
                     <Col> 
                         <Button 
                             onClick={() => this.handleClickCreate()}
                             variant="primary" 
-                             style={{margin:10}}>
+                        >
                                 Create new poll
                         </Button>
                     </Col>

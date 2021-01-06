@@ -6,8 +6,10 @@ from rest_framework.response import Response
 from .serializers import QuestionSerializer, ChoiceSerializer, VoteSerializer
 from .models import Question, Choice, Vote
 
+
 @api_view(['GET'])
 def questions_list(request):
+    # print(request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR')))
     qustions = Question.objects.all()
     serializer = QuestionSerializer(qustions, many=True)
 
@@ -56,12 +58,18 @@ def create_poll(request):
     #If there are no choices
     if len(request.data.get("choices", [])) == 0:
         return Response({"Bad Request": "missing choices"}, status.HTTP_400_BAD_REQUEST)
+
+    #To delete all coices without text
+    choices_without_blanks = [c for c in request.data["choices"] if len(c.replace(' ', '')) > 0]
+    if len(choices_without_blanks) == 0:
+        return Response({"Bad Request": "missing choices with text"}, status.HTTP_400_BAD_REQUEST)
+
     
     new_question = create_question({"question_text": request.data["question_text"]})
     new_question_id = new_question['id']
 
     qustion = get_object_or_404(Question, id = new_question_id)
-    for choice_text in request.data["choices"]:
+    for choice_text in choices_without_blanks:
         qustion.choice_set.create(choice_text=choice_text)
 
     return Response(new_question, status.HTTP_201_CREATED)
@@ -71,6 +79,7 @@ def vote(request, qid):
     question = get_object_or_404(Question, id = qid)
     user_agent = request.META['HTTP_USER_AGENT']
     ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR'))
+    # ip = request.data['public-ip']
     try:
         selected_choice = question.choice_set.get(pk=request.data['choice'])
     except:
@@ -83,7 +92,10 @@ def vote(request, qid):
 
     return Response(new_vote.data, status.HTTP_202_ACCEPTED)
 
-
+@api_view(['GET'])
+def get_internal_ip(request):
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR'))
+    return Response({"ip": ip}, status.HTTP_200_OK)
 
 
 

@@ -1,18 +1,21 @@
 import React, { Component } from 'react';
-import { Button, Card, Container, Row, Col, ButtonGroup, ToggleButton, Badge} from 'react-bootstrap';
+import { Button, Card, Container, Row, Col, ButtonGroup, ToggleButton, Badge, Alert} from 'react-bootstrap';
 
 export default class Poll extends Component {
     constructor(props) {
         super(props);
         this.state = {
             choices: [
-                { choice_text: 'Active', id: '1', votes: 0, question: 1},
-                { choice_text: 'Radio', id: '2' , votes: 0, question: 1},
-                { choice_text: 'Radio', id: '3' , votes: 0, question: 1},
+                // { choice_text: 'Active', id: '1', votes: 0, question: 1},
+                // { choice_text: 'Radio', id: '2' , votes: 0, question: 1},
+                // { choice_text: 'Radio', id: '3' , votes: 0, question: 1},
             ],
-            selectedRadioVal:0,
+            selectedChoiceId:0,
             qustionText: "Question",
-            showResults:false
+            showResults:false,
+            showError: false,
+            errorMessage: "",
+            internal_ip:""
 
         }
     }
@@ -20,6 +23,23 @@ export default class Poll extends Component {
     componentDidMount() {
         this.fetchQuestion();
         this.fetchChoices();
+        this.internalIpVoteCheck();
+      }
+
+      internalIpVoteCheck(){
+        const id = this.props.match.params.id
+        fetch('http://127.0.0.1:8000/api/get_ip')
+        .then(response => response.json())
+        .then(internal_ip => {
+            fetch('http://127.0.0.1:8000/api/votes/' + id)
+            .then(response => response.json())
+            .then(vdata => {
+                    // If my ip already voted
+                   if (vdata.find((v) => v.ip_address === internal_ip.ip)) {
+                       this.setState({showResults: true})
+                   }
+                })
+        })
       }
 
       fetchQuestion() {
@@ -45,6 +65,7 @@ export default class Poll extends Component {
             this.setState({
                 choices:data
             })
+            // this.props.history.push('/')
         )
       }
     
@@ -57,8 +78,29 @@ export default class Poll extends Component {
       }
 
       handleVote() {
-        this.setState({showResults: true})
-      }
+        const requestOptions = {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                choice: this.state.selectedChoiceId
+            }),
+          };
+
+        const qid = this.props.match.params.id
+        // console.log({"choice":this.state.selectedChoiceId})
+        fetch('http://127.0.0.1:8000/api/vote/' + qid, requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+            if (data['Bad Request']) {
+                
+                this.setState({errorMessage: data['Bad Request']})
+                this.setState({showError: true})
+            }
+            else
+                this.fetchChoices()
+                this.setState({showResults: true})
+            });
+        }
 
       showVoteButton() {
           if (!this.state.showResults)
@@ -75,37 +117,44 @@ export default class Poll extends Component {
 
       showButtonsOrResults() {
         return (
-            <ButtonGroup toggle vertical>
-                {this.state.choices.map((choice, idx) => (
-                    <ToggleButton
-                        key={idx}
-                        type="radio"
-                        variant="outline-info"
-                        name="radio"
-                        value={choice.id}
-                        checked={this.state.selectedRadioVal === choice.id}
-                        onChange={(e) => this.setState({selectedRadioVal: e.currentTarget.id})}
-                        disabled={this.state.showResults}
-                        style={{marginBottom:10}}
-                    >
-                        {choice.choice_text}
-                        {this.state.showResults && <div><Badge pill variant="info">{choice.votes}</Badge></div>}
-                    </ToggleButton>
-                ))}
-                {this.showVoteButton()}
-        </ButtonGroup>
+            <div>
+                <ButtonGroup toggle vertical>
+                    {this.state.choices.map((choice, idx) => (
+                        <ToggleButton
+                            key={idx}
+                            type="radio"
+                            variant="outline-info"
+                            name="radio"
+                            value={choice.id}
+                            checked={this.state.selectedChoiceId === choice.id}
+                            onChange={(e) => this.setState({selectedChoiceId: choice.id})}
+                            disabled={this.state.showResults}
+                            style={{marginBottom:10}}
+                        >
+                            {choice.choice_text}
+                            {this.state.showResults && <div><Badge pill variant="info">{choice.votes}</Badge></div>}
+                        </ToggleButton>
+                    ))}
+                    {this.showVoteButton()}
+            </ButtonGroup>
+        </div>
           )
       }
 
       render() {
           return (
             <Container>
-                <Row>
+                <Row style={{margin:10}}>
                     <Col className="App">
-                        <h1>Polls App</h1>
+                        <h2>Polls App</h2>
                     </Col>
                     <Col> 
-                        <Button onClick={() => this.handleClickHome()} variant="primary" style={{margin:10}}>Back</Button>
+                        <Button 
+                            onClick={() => this.handleClickHome()}
+                            variant="primary" 
+                        >
+                            Back
+                        </Button>
                     </Col>
                 </Row>
                 <Row>
@@ -114,6 +163,15 @@ export default class Poll extends Component {
                         <Card>
                             <Card.Header as="h5">Poll question</Card.Header>
                             <Card.Body>
+                                <Alert 
+                                        show={this.state.showError} 
+                                        onClose={() => this.setState({showError: false})} 
+                                        variant="danger" 
+                                        dismissible
+                                    >
+                                        <Alert.Heading>Error!</Alert.Heading>
+                                        <p>{this.state.errorMessage}</p>
+                                </Alert>
                                 <Card.Title>{this.state.qustionText}</Card.Title>
                                 {this.showButtonsOrResults()}  
                             </Card.Body> 
