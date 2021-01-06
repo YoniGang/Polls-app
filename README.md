@@ -10,7 +10,7 @@ pip install -r requirements.txt
 
 ### 2. Enter to the "frontend" folder:
 
-   Use the package manager [npm](https://www.npmjs.com/) to install the node modules and to build the react project
+#### Use the package manager [npm](https://www.npmjs.com/) to install the node modules and to build the react project
 
 ```bash
 npm install
